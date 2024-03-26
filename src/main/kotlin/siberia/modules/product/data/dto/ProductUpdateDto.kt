@@ -29,7 +29,8 @@ data class ProductUpdateDto (
     var isFileAlreadyUploaded: Boolean? = null,
     val distributorPercent: Double? = null,
     val professionalPercent: Double? = null,
-    val id: Int? = null
+    val id: Int? = null,
+    val offertaPrice: Double? = null
 
     //Future iterations
     //val size: Double? = null,

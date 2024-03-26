@@ -41,6 +41,7 @@ class ProductDao(id: EntityID<Int>): BaseIntEntity<ProductOutputDto>(id, Product
     var distributorPrice by ProductModel.distributorPrice
     var professionalPrice by ProductModel.professionalPrice
     var commonPrice by ProductModel.commonPrice
+    var offertaPrice by ProductModel.offertaPrice
 
     private val _categoryId by ProductModel.category
     val categoryId: Int? get() = _categoryId?.value
@@ -75,7 +76,8 @@ class ProductDao(id: EntityID<Int>): BaseIntEntity<ProductOutputDto>(id, Product
             professionalPrice, commonPrice, categoryId,
             collectionId, color, amountInBox,
             expirationDate, link,
-            distributorPercent, professionalPercent, eanCode // size, volume,
+            distributorPercent, professionalPercent, eanCode,
+            offertaPrice// size, volume,
         )
 
     fun fullOutput(): ProductFullOutputDto {
@@ -88,7 +90,7 @@ class ProductDao(id: EntityID<Int>): BaseIntEntity<ProductOutputDto>(id, Product
             cost, lastPurchaseDate, distributorPrice,
             professionalPrice, commonPrice, category?.toOutputDto(),
             collection?.toOutputDto(), color, amountInBox,
-            expirationDate, link, quantity
+            expirationDate, link, quantity, offertaPrice
             //size, volume
         )
     }
@@ -109,7 +111,7 @@ class ProductDao(id: EntityID<Int>): BaseIntEntity<ProductOutputDto>(id, Product
             cost, lastPurchaseDate, distributorPrice,
             professionalPrice, commonPrice, category?.toOutputDto(),
             collection?.toOutputDto(), color, amountInBox,
-            expirationDate, link, 0.0, stocksRelations
+            expirationDate, link, 0.0, stocksRelations, offertaPrice
         )
     }
 
@@ -131,6 +133,7 @@ class ProductDao(id: EntityID<Int>): BaseIntEntity<ProductOutputDto>(id, Product
 //        distributorPrice = productUpdateDto.distributorPrice ?: distributorPrice
 //        professionalPrice = productUpdateDto.professionalPrice ?: professionalPrice
         commonPrice = productUpdateDto.commonPrice ?: commonPrice
+        offertaPrice = productUpdateDto.offertaPrice ?: offertaPrice
         category = if (productUpdateDto.category != null) CategoryDao[productUpdateDto.category!!] else category
 
         collection = if (productUpdateDto.collection != 0 && productUpdateDto.collection != null) CollectionDao[productUpdateDto.collection!!]

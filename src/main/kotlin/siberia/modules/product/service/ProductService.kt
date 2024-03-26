@@ -52,7 +52,7 @@ class ProductService(di: DI) : KodeinService(di) {
             amountInBox = productCreateDto.amountInBox!!
             expirationDate = productCreateDto.expirationDate!!
             link = productCreateDto.link!!
-
+            offertaPrice = productCreateDto.offertaPrice!!
 //            Future iterations
 //            size = productCreateDto.size
 //            volume = productCreateDto.volume
@@ -133,7 +133,8 @@ class ProductService(di: DI) : KodeinService(di) {
             createLikeCond(searchFilterDto?.name, (ProductModel.id neq 0), ProductModel.name) and
             createLikeCond(searchFilterDto?.color, (ProductModel.id neq 0), ProductModel.color) and
             createLikeCond(searchFilterDto?.vendorCode, (ProductModel.id neq 0), ProductModel.vendorCode) and
-            createLikeCond(searchFilterDto?.description, (ProductModel.id neq 0), ProductModel.description)
+            createLikeCond(searchFilterDto?.description, (ProductModel.id neq 0), ProductModel.description) and
+            createRangeCond(searchFilterDto?.offertaPrice, (ProductModel.id neq 0), ProductModel.offertaPrice, -1.0, Double.MAX_VALUE)
 
 //            Future iterations
 //            createRangeCond(searchFilterDto.size, (ProductModel.id neq 0), ProductModel.size, -1.0, Double.MAX_VALUE) and

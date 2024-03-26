@@ -20,6 +20,7 @@ data class ProductCreateDto (
     var amountInBox: Int?,
     var expirationDate: Long?,
     var link: String?,
+    var offertaPrice: Double?
 //    Future iterations
 //    val size: Double,
 //    val volume: Double,

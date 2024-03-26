@@ -35,6 +35,7 @@ object ProductModel: BaseIntIdTable() {
     val distributorPercent = double("distributor_percent").default(1.0)
     val professionalPercent = double("professional_percent").default(1.0)
     val eanCode = text("ean_code")
+    val offertaPrice = double("offertaPrice").default(0.0)
     //Future iterations
 //    val size = double("size").default(1.0)
 //    val volume = double("volume").default(1.0)
@@ -88,6 +89,9 @@ object ProductModel: BaseIntIdTable() {
 
             if (massiveUpdateDto.professionalPercent != null)
                 it[professionalPercent] = massiveUpdateDto.professionalPercent
+
+            if (massiveUpdateDto.offertaPrice != null)
+                it[offertaPrice] = massiveUpdateDto.offertaPrice
         }
 
         rollbackList

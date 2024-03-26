@@ -25,7 +25,8 @@ data class ProductOutputDto(
     val link: String,
     val distributorPercent: Double,
     val professionalPercent: Double,
-    val eanCode: String
+    val eanCode: String,
+    val offertaPrice: Double?
 //    Future iterations
 //    val size: Double,
 //    val volume: Double,

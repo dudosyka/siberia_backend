@@ -23,7 +23,8 @@ data class MassiveUpdateDto (
     var link: String? = null,
     val distributorPercent: Double? = null,
     val professionalPercent: Double? = null,
-    val eanCode: String? = null
+    val eanCode: String? = null,
+    val offertaPrice : Double? = null
 ) {
     fun productUpdateDto(productId: Int): ProductUpdateDto =
         ProductUpdateDto(
@@ -33,5 +34,6 @@ data class MassiveUpdateDto (
             barcode = null,
             brand, name, description, commonPrice, category, collection, color, amountInBox, expirationDate, link,
             id = productId,
+            offertaPrice = offertaPrice
         )
 }
