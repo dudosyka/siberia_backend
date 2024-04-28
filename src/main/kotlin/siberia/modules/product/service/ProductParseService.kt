@@ -7,6 +7,7 @@ import siberia.modules.product.data.dto.csv.ProductCreateCsvMapper
 import siberia.utils.kodein.KodeinService
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.apache.poi.ss.usermodel.Row
+import org.apache.poi.ss.usermodel.CellType
 
 class ProductParseService (di: DI) : KodeinService(di) {
     fun parseCSVtoProductDto(bytes : ByteArray) : List<ProductCreateDto> {
@@ -17,9 +18,9 @@ class ProductParseService (di: DI) : KodeinService(di) {
         val numberOfSheets = workbook.numberOfSheets
         val products = mutableListOf<ProductCreateDto>()
         val requiredHeaders = setOf(
-            "vendorCode", "eanCode", "barcode", "name", "description", "commonPrice",
+            "vendorCode", "eanCode", "name", "description", "commonPrice",
             "distributorPercent", "professionalPercent", "category", "color", "amountInBox",
-            "expirationDate", "link", "offertaPrice"
+            "expirationDate", "link"
         )
 
         for (sheetIndex in 0 until numberOfSheets) {
@@ -58,26 +59,61 @@ class ProductParseService (di: DI) : KodeinService(di) {
         try {
             return ProductCreateDto(
                 photoList = emptyList(),
-                vendorCode = columnIndexMap["vendorCode"]?.let { row.getCell(it)?.stringCellValue },
-                eanCode = columnIndexMap["eanCode"]?.let { row.getCell(it)?.stringCellValue },
-                barcode = columnIndexMap["barcode"]?.let { row.getCell(it)?.stringCellValue },
-                brand = columnIndexMap["brand"]?.let { row.getCell(it)?.numericCellValue?.toInt() },
-                name = columnIndexMap["name"]?.let { row.getCell(it)?.stringCellValue },
-                description = columnIndexMap["description"]?.let { row.getCell(it)?.stringCellValue },
-                commonPrice = columnIndexMap["commonPrice"]?.let { row.getCell(it)?.numericCellValue?.toDouble() },
-                category = columnIndexMap["category"]?.let { row.getCell(it)?.numericCellValue?.toInt() },
-                collection = columnIndexMap["collection"]?.let { row.getCell(it)?.numericCellValue?.toInt() },
-                color = columnIndexMap["color"]?.let { row.getCell(it)?.stringCellValue },
-                amountInBox = columnIndexMap["amountInBox"]?.let { row.getCell(it)?.numericCellValue?.toInt() },
-                expirationDate = columnIndexMap["expirationDate"]?.let { row.getCell(it)?.numericCellValue?.toLong() },
-                link = columnIndexMap["link"]?.let { row.getCell(it)?.stringCellValue },
-                offertaPrice = columnIndexMap["offertaPrice"]?.let { row.getCell(it)?.numericCellValue?.toDouble() },
-                distributorPercent = columnIndexMap["distributorPercent"]?.let { row.getCell(it)?.numericCellValue?.toDouble() },
-                professionalPercent = columnIndexMap["professionalPercent"]?.let { row.getCell(it)?.numericCellValue?.toDouble() }
+                vendorCode = getStringValue(row, columnIndexMap["vendorCode"]),
+                eanCode = getStringValue(row, columnIndexMap["eanCode"]),
+                barcode = getStringValue(row, columnIndexMap["barcode"]),
+                brand = getIntValue(row, columnIndexMap["brand"]),
+                name = getStringValue(row, columnIndexMap["name"]),
+                description = getStringValue(row, columnIndexMap["description"]),
+                commonPrice = getDoubleValue(row, columnIndexMap["commonPrice"]),
+                category = getIntValue(row, columnIndexMap["category"]),
+                collection = getIntValue(row, columnIndexMap["collection"]),
+                color = getStringValue(row, columnIndexMap["color"]),
+                amountInBox = getIntValue(row, columnIndexMap["amountInBox"]),
+                expirationDate = getLongValue(row, columnIndexMap["expirationDate"]),
+                link = getStringValue(row, columnIndexMap["link"]),
+                offertaPrice = getDoubleValue(row, columnIndexMap["offertaPrice"]),
+                distributorPercent = getDoubleValue(row, columnIndexMap["distributorPercent"]),
+                professionalPercent = getDoubleValue(row, columnIndexMap["professionalPercent"])
             )
         } catch (e: Exception) {
             val rowNumber = row.rowNum + 1
             throw BadRequestException("Invalid type in row $rowNumber: ${e.message}", e)
         }
     }
+
+    private fun getStringValue(row: Row, columnIndex: Int?): String {
+        return columnIndex?.let { idx ->
+            val cell = row.getCell(idx)
+            if (cell != null) {
+                when (cell.cellType) {
+                    CellType.STRING -> cell.stringCellValue
+                    CellType.NUMERIC -> cell.numericCellValue.toString()
+                    CellType.BOOLEAN -> cell.booleanCellValue.toString()
+                    CellType.BLANK -> ""
+                    else -> cell.toString()  // На случай других типов данных, таких как формулы
+                }
+            } else ""
+        } ?: ""
+    }
+
+    private fun getDoubleValue(row: Row, columnIndex: Int?): Double? {
+        val cell = columnIndex?.let { row.getCell(it) }
+        return if (cell != null) {
+            when (cell.cellType) {
+                CellType.NUMERIC -> cell.numericCellValue
+                CellType.STRING -> cell.stringCellValue.toDoubleOrNull()
+                else -> null
+            }
+        } else null
+    }
+
+    private fun getIntValue(row: Row, columnIndex: Int?): Int? {
+        return getDoubleValue(row, columnIndex)?.toInt()
+    }
+
+    private fun getLongValue(row: Row, columnIndex: Int?): Long? {
+        return getDoubleValue(row, columnIndex)?.toLong()
+    }
+
 }
