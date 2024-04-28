@@ -14,36 +14,44 @@ class ProductParseService (di: DI) : KodeinService(di) {
         return productCreateCsvMapper.readList(bytes)
     }
     fun parseXLSXtoProductDto(workbook: XSSFWorkbook): List<ProductCreateDto> {
-        val sheet = workbook.getSheetAt(0)
+        val numberOfSheets = workbook.numberOfSheets
         val products = mutableListOf<ProductCreateDto>()
         val requiredHeaders = setOf(
             "vendorCode", "eanCode", "barcode", "name", "description", "commonPrice",
             "distributorPercent", "professionalPercent", "category", "color", "amountInBox",
             "expirationDate", "link", "offertaPrice"
         )
-        val headerRow = sheet.getRow(0) ?: throw BadRequestException("Header row cannot be null!")
 
-        val columnIndexMap = headerRow.cellIterator().asSequence().mapIndexed { index, cell ->
-            cell.stringCellValue.trim() to index
-        }.toMap()
+        for (sheetIndex in 0 until numberOfSheets) {
+            val sheet = workbook.getSheetAt(sheetIndex)
+            val headerRow = sheet.getRow(0) ?: continue
 
-        // check if all required headers are exist
-        val headersForException = mutableListOf<String>()
-        requiredHeaders.forEach { header ->
-            if (!columnIndexMap.containsKey(header)) {
-                headersForException.add(header)
+            val columnIndexMap = headerRow.cellIterator().asSequence().mapIndexed { index, cell ->
+                cell.stringCellValue.trim() to index
+            }.toMap()
+
+            // check if all required headers are exist
+            val missedHeaders = mutableListOf<String>()
+            requiredHeaders.forEach { header ->
+                if (!columnIndexMap.containsKey(header)) {
+                    missedHeaders.add(header)
+                }
+            }
+            if (missedHeaders.isNotEmpty()) {
+                continue
+            }
+            else {                                 // if all ok -> parse  rows
+                for (row in sheet.rowIterator()) {
+                    if (row.rowNum == 0) continue
+                    val product = parseRow(row, columnIndexMap)
+                    products.add(product)
+                }
             }
         }
-        if (headersForException.isNotEmpty()) {
-            throw BadRequestException("Missing required header !: $headersForException ")}
-        else {                                 // if all ok -> parse  rows
-            for (row in sheet.rowIterator()) {
-                if (row.rowNum == 0) continue
-                val product = parseRow(row, columnIndexMap)
-                products.add(product)
-            }
-            return products
+        if (products.isEmpty()) {
+            throw BadRequestException("No one page contains a complete list of required headers.")
         }
+        return products
     }
 
     private fun parseRow(row: Row, columnIndexMap: Map<String, Int>): ProductCreateDto {
