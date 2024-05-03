@@ -30,6 +30,13 @@ object FilesUtil {
             val image = ImageIO.read(File("${AppConf.server.fileLocation}/$fileName"))
             val formatName = fileName.split(".").last()
 
+            if (formatName == "webp") {
+                val bytes = Base64.getDecoder().decode(base64Encoded)
+                val path = Path("${AppConf.server.fileLocation}/$compressFileName")
+                path.writeBytes(bytes)
+                return
+            }
+
             val writers = ImageIO.getImageWritersByFormatName(formatName)
             val writer = writers.next()
 
