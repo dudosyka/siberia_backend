@@ -160,7 +160,7 @@ fun Application.module() {
         DatabaseInitializer.initRequestStatuses()
         DatabaseInitializer.initUsers()
         DatabaseInitializer.initCategory()
-        DatabaseInitializer.initTestData()
+//        DatabaseInitializer.initTestData()
         commit()
     }
 }

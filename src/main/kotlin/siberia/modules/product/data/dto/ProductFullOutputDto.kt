@@ -31,7 +31,8 @@ data class ProductFullOutputDto (
     val expirationDate: Long,
     val link: String,
     val quantity: Double,
-    val offertaPrice: Double?
+    val offertaPrice: Double?,
+    val createdAt: String,
 //    Future iterations
 //    val size: Double,
 //    val volume: Double,

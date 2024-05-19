@@ -75,11 +75,11 @@ class ProductService(di: DI) : KodeinService(di) {
             commonPrice = productCreateDto.commonPrice!!
             category = if (productCreateDto.category != null) CategoryDao[productCreateDto.category!!] else null
             collection = if (productCreateDto.collection != null) CollectionDao[productCreateDto.collection!!] else null
-            color = productCreateDto.color!!
+            color = productCreateDto.color ?: ""
             amountInBox = productCreateDto.amountInBox!!
-            expirationDate = productCreateDto.expirationDate!!
-            link = productCreateDto.link!!
-            offertaPrice = productCreateDto.offertaPrice!!
+            expirationDate = productCreateDto.expirationDate ?: 0
+            link = productCreateDto.link ?: ""
+            offertaPrice = productCreateDto.offertaPrice ?: 0.0
 //            Future iterations
 //            size = productCreateDto.size
 //            volume = productCreateDto.volume

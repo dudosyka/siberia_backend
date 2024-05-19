@@ -82,6 +82,14 @@ class ProductDao(id: EntityID<Int>): BaseIntEntity<ProductOutputDto>(id, Product
             offertaPrice// size, volume,
         )
 
+    private val createdAtString: String
+        get() {
+            val year = createdAt.year
+            val month = createdAt.monthValue
+            val date = createdAt.dayOfMonth
+            return "${date}/${month}/${year}"
+        }
+
     fun fullOutput(): ProductFullOutputDto {
         val quantity = StockToProductModel.select {
             StockToProductModel.product eq this@ProductDao.id
@@ -92,7 +100,7 @@ class ProductDao(id: EntityID<Int>): BaseIntEntity<ProductOutputDto>(id, Product
             cost, lastPurchaseDate, distributorPrice, professionalPrice,
             distributorPercent, professionalPercent, commonPrice, category?.toOutputDto(),
             collection?.toOutputDto(), color, amountInBox,
-            expirationDate, link, quantity, offertaPrice
+            expirationDate, link, quantity, offertaPrice, createdAtString
             //size, volume
         )
     }
