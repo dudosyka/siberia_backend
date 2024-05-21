@@ -33,13 +33,16 @@ class TransactionDao(id: EntityID<Int>) : BaseIntEntity<TransactionOutputDto>(id
     val type by TransactionTypeDao referencedOn TransactionModel.type
 
     var hidden by TransactionModel.hidden
+    var isPaid by TransactionModel.isPaid
+    var arrivalDate by TransactionModel.arrivalDate
 
     val products by ProductDao via TransactionToProductModel
 
     private val createdAtString: String get() = createdAt.toString()
+    private val arrivalDateString: String? get() = arrivalDate?.toString()
 
     override fun toOutputDto(): TransactionOutputDto =
-        TransactionOutputDto(idValue, fromId, toId, statusId, typeId, createdAtString)
+        TransactionOutputDto(idValue, fromId, toId, statusId, typeId, isPaid, createdAtString, arrivalDateString)
 
     val inputProductsList get(): List<TransactionInputDto.TransactionProductInputDto> =
         TransactionModel.getFullProductList(idValue).map {
@@ -56,7 +59,9 @@ class TransactionDao(id: EntityID<Int>) : BaseIntEntity<TransactionOutputDto>(id
             toId, to?.name,
             status.toOutputDto(),
             type.toOutputDto(),
-            createdAtString
+            isPaid,
+            createdAtString,
+            arrivalDateString
         )
 
     fun fullOutput(): TransactionFullOutputDto =
@@ -66,6 +71,8 @@ class TransactionDao(id: EntityID<Int>) : BaseIntEntity<TransactionOutputDto>(id
             status.toOutputDto(),
             type.toOutputDto(),
             TransactionModel.getFullProductList(idValue),
+            isPaid,
+            arrivalDateString,
             createdAtString
         )
 

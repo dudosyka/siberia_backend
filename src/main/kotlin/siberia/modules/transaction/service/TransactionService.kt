@@ -174,7 +174,12 @@ class TransactionService(di: DI) : KodeinService(di) {
         }.map {
             val productId = it[TransactionToProductModel.product].value
             val productDao = ProductDao[productId]
-            val transactionProductDto = TransactionFullOutputDto.TransactionProductDto(productDao.toOutputDto(), it[TransactionToProductModel.amount], it[TransactionToProductModel.price])
+            val transactionProductDto = TransactionFullOutputDto.TransactionProductDto(
+                productDao.toOutputDto(),
+                it[TransactionToProductModel.amount],
+                it[TransactionToProductModel.actualAmount],
+                it[TransactionToProductModel.price]
+            )
             if (productsMap.containsKey(productId))
                 productsMap[productId]!!.amount += transactionProductDto.amount
             else
@@ -212,7 +217,9 @@ class TransactionService(di: DI) : KodeinService(di) {
             requestStatus.open
         )
 
-        val incomeAvailableStatuses = listOf<Int>()
+        val incomeAvailableStatuses = listOf(
+            requestStatus.created
+        )
 
         val writeOffAvailableStatuses = listOf<Int>()
 

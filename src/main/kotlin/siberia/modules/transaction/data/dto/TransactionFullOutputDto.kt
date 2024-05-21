@@ -14,6 +14,8 @@ data class TransactionFullOutputDto (
     val status: TransactionStatusOutputDto,
     val type: TransactionTypeOutputDto,
     val products: List<TransactionProductDto>,
+    val isPaid: Boolean?,
+    val arrivalDate: String?,
     val timestamp: String,
     var availableStatuses: List<TransactionStatusOutputDto> = listOf(),
 ) {
@@ -21,6 +23,7 @@ data class TransactionFullOutputDto (
     data class TransactionProductDto(
         val product: ProductOutputDto,
         var amount: Double,
+        var actualAmount: Double?,
         val price: Double? = null
     )
 }

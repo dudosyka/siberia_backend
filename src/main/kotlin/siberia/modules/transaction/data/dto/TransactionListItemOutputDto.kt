@@ -13,5 +13,7 @@ data class TransactionListItemOutputDto (
     val toName: String? = null,
     val status: TransactionStatusOutputDto,
     val type: TransactionTypeOutputDto,
+    val isPaid: Boolean?,
     val timestamp: String,
+    val arrivalDate: String?,
 )

@@ -28,11 +28,19 @@ class IncomeTransactionController(override val di: DI) : KodeinController() {
             }
             authenticate ("create-income-request") {
                 route("{transactionId}") {
+                    patch("actual") {
+                        val transactionId = call.parameters.getInt("transactionId", "Transaction id must be INT")
+                        val productDiff = call.receive<TransactionInputDto.TransactionProductInputDto>()
+
+                        call.respond(incomeTransactionService.updateActualSingle(transactionId, productDiff))
+                    }
                     patch("approve") {
                         val transactionId = call.parameters.getInt("transactionId", "Transaction id must be INT")
                         val authorizedUser = call.getAuthorized()
 
-                        call.respond(incomeTransactionService.processed(authorizedUser, transactionId))
+                        val productsDiff = call.receive<List<TransactionInputDto.TransactionProductInputDto>>()
+
+                        call.respond(incomeTransactionService.processed(authorizedUser, transactionId, productsDiff))
                     }
                     patch("cancel") {
                         val transactionId = call.parameters.getInt("transactionId", "Transaction id must be INT")

@@ -55,7 +55,7 @@ class ProductService(di: DI) : KodeinService(di) {
     private val productParseService: ProductParseService by instance()
 
     private fun getPrice(base: Double, percent: Double): Double {
-        val price = base * (percent / 100)
+        val price = base - (base * (percent / 100))
 
         return round(price * 100) / 100
     }

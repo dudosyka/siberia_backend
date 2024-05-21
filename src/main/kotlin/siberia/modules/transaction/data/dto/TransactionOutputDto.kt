@@ -9,5 +9,7 @@ data class TransactionOutputDto (
     val to: Int? = null,
     val status: Int,
     val type: Int,
+    val isPaid: Boolean?,
     val timestamp: String,
+    val arrivalDate: String?,
 )

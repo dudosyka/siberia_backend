@@ -438,10 +438,10 @@ object DatabaseInitializer {
                 val commonPrice = (it * 32).toDouble()
                 val distributorPercent = (it * 16).toDouble()
                 this[ProductModel.distributorPercent] = distributorPercent
-                this[ProductModel.distributorPrice] = (distributorPercent / 100) * commonPrice
+                this[ProductModel.distributorPrice] = commonPrice - ((distributorPercent / 100) * commonPrice)
                 val professionalPercent = (it * 16).toDouble()
                 this[ProductModel.professionalPercent] = professionalPercent
-                this[ProductModel.professionalPrice] = (professionalPercent / 100) * commonPrice
+                this[ProductModel.professionalPrice] = commonPrice - ((professionalPercent / 100) * commonPrice)
                 this[ProductModel.commonPrice] = commonPrice
                 this[ProductModel.category] = categoryBrandCollection
                 this[ProductModel.collection] = categoryBrandCollection
