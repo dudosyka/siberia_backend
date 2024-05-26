@@ -205,7 +205,7 @@ class TransferTransactionService(di: DI) : AbstractTransactionService(di) {
         resultDto
     }
 
-    fun partialDelivered(authorizedUser: AuthorizedUser, transactionId: Int, productsDiff: List<TransactionInputDto.TransactionProductInputDto>): TransactionOutputDto = transaction {
+    fun partialDeliveredByDiff(authorizedUser: AuthorizedUser, transactionId: Int, productsDiff: List<TransactionInputDto.TransactionProductInputDto>): TransactionOutputDto = transaction {
         val transactionDao = TransactionDao[transactionId]
         val author = UserDao[authorizedUser.id]
         if (transactionDao.typeId != AppConf.requestTypes.transfer && transactionDao.statusId != AppConf.requestStatus.inProgress)
