@@ -13,4 +13,6 @@ abstract class SystemEventCreateDto {
     abstract val eventObjectType: Int
 
     abstract val eventObjectId: Int
+
+    var eventObjectData: String = ""
 }

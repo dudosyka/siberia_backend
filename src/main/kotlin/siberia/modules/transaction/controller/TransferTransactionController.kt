@@ -56,6 +56,13 @@ class TransferTransactionController(override val di: DI) : KodeinController() {
 
                         call.respond(transferTransactionService.partialDelivered(authorizedUser, transactionId, deliveredProductsList))
                     }
+                    patch ("partially") {
+                        val transactionId = call.parameters.getInt("transactionId", "Transaction id must be INT")
+                        val authorizedUser = call.getAuthorized()
+                        val deliveredProductsList = call.receive<List<TransactionInputDto.TransactionProductInputDto>>()
+
+                        call.respond(transferTransactionService.partialDelivered(authorizedUser, transactionId, deliveredProductsList))
+                    }
                     get("${AppConf.requestStatus.inProgress}/{stockId}") {
                         val transactionId = call.parameters.getInt("transactionId", "Transaction id must be INT")
                         val stockId = call.parameters.getInt("stockId", "Stock id must be INT")

@@ -16,7 +16,10 @@ import siberia.modules.transaction.data.dao.TransactionDao
 import siberia.modules.transaction.data.dao.TransactionStatusDao
 import siberia.modules.transaction.data.dto.TransactionInputDto
 import siberia.modules.transaction.data.dto.TransactionOutputDto
+import siberia.modules.transaction.data.dto.systemevents.PartialDeliveringEvent
+import siberia.modules.transaction.data.dto.systemevents.TransactionUpdateEvent
 import siberia.modules.transaction.data.models.TransactionModel
+import siberia.modules.transaction.data.models.TransactionRelatedUserModel
 import siberia.modules.transaction.data.models.TransactionToProductModel
 import siberia.modules.user.data.dao.UserDao
 import siberia.utils.database.idValue
@@ -200,6 +203,32 @@ class TransferTransactionService(di: DI) : AbstractTransactionService(di) {
         }
 
         resultDto
+    }
+
+    fun partialDelivered(authorizedUser: AuthorizedUser, transactionId: Int, productsDiff: List<TransactionInputDto.TransactionProductInputDto>): TransactionOutputDto = transaction {
+        val transactionDao = TransactionDao[transactionId]
+        val author = UserDao[authorizedUser.id]
+        if (transactionDao.typeId != AppConf.requestTypes.transfer && transactionDao.statusId != AppConf.requestStatus.inProgress)
+            throw ForbiddenException()
+
+        val targetStockId = transactionDao.toId ?: throw BadRequestException("Bad transaction")
+        val targetStock = StockDao[targetStockId]
+
+        //We check here do user has access to make transaction delivered, if he has than he has access to partial delivering too
+        if (!checkAccessToStatusForTransaction(author, transactionId, targetStockId, AppConf.requestStatus.delivered))
+            throw ForbiddenException()
+
+        TransactionModel.updateActualByDiff(transactionId, productsDiff)
+
+        StockModel.appendProducts(targetStockId, productsDiff)
+
+        val event = TransactionUpdateEvent(author.login, targetStock.name, transactionId, transactionDao.typeId)
+        event.eventObjectData = PartialDeliveringEvent(productsDiff).json
+
+        TransactionRelatedUserModel.addRelated(authorizedUser.id, transactionId)
+        transactionSocketService.updateStatus(transactionDao.fullOutput())
+
+        transactionDao.toOutputDto()
     }
 
     fun notDelivered(authorizedUser: AuthorizedUser, transactionId: Int): TransactionOutputDto = transaction {

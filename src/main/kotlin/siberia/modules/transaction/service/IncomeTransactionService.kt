@@ -6,11 +6,16 @@ import siberia.conf.AppConf
 import siberia.exceptions.BadRequestException
 import siberia.exceptions.ForbiddenException
 import siberia.modules.auth.data.dto.AuthorizedUser
+import siberia.modules.stock.data.dao.StockDao
 import siberia.modules.stock.data.models.StockModel
 import siberia.modules.transaction.data.dao.TransactionDao
+import siberia.modules.transaction.data.dao.TransactionStatusDao
 import siberia.modules.transaction.data.dto.TransactionInputDto
 import siberia.modules.transaction.data.dto.TransactionOutputDto
+import siberia.modules.transaction.data.dto.systemevents.PartialDeliveringEvent
+import siberia.modules.transaction.data.dto.systemevents.TransactionUpdateEvent
 import siberia.modules.transaction.data.models.TransactionModel
+import siberia.modules.transaction.data.models.TransactionRelatedUserModel
 import siberia.modules.user.data.dao.UserDao
 
 class IncomeTransactionService(di: DI) : AbstractTransactionService(di) {
@@ -44,6 +49,7 @@ class IncomeTransactionService(di: DI) : AbstractTransactionService(di) {
 
     fun receivePartially(authorizedUser: AuthorizedUser, transactionId: Int, productsDiff: List<TransactionInputDto.TransactionProductInputDto>): TransactionOutputDto = transaction {
         val transactionDao = TransactionDao[transactionId]
+        val author = UserDao[authorizedUser.id]
         val availableStatuses = listOf(
             AppConf.requestStatus.created, AppConf.requestStatus.inProgress
         )
@@ -51,9 +57,9 @@ class IncomeTransactionService(di: DI) : AbstractTransactionService(di) {
             throw ForbiddenException()
 
         val targetStockId = transactionDao.toId ?: throw BadRequestException("Bad transaction")
+        val targetStock = StockDao[targetStockId]
 
         transactionDao.isPaid = true
-        transactionDao.flush()
 
         TransactionModel.updateActualByDiff(transactionId, productsDiff)
 
@@ -64,12 +70,21 @@ class IncomeTransactionService(di: DI) : AbstractTransactionService(di) {
             )
         })
 
-        changeStatusTo(
-            authorizedUser,
-            transactionId,
-            targetStockId,
-            AppConf.requestStatus.inProgress
-        ).toOutputDto()
+        if (transactionDao.statusId == AppConf.requestStatus.created) {
+            if (!checkAccessToStatusForTransaction(author, transactionId, targetStockId, AppConf.requestStatus.inProgress))
+                throw ForbiddenException()
+            transactionDao.status = TransactionStatusDao[AppConf.requestStatus.inProgress]
+        }
+
+        transactionDao.flush()
+
+        val event = TransactionUpdateEvent(author.login, targetStock.name, transactionId, transactionDao.typeId)
+        event.eventObjectData = PartialDeliveringEvent(productsDiff).json
+
+        TransactionRelatedUserModel.addRelated(authorizedUser.id, transactionId)
+        transactionSocketService.updateStatus(transactionDao.fullOutput())
+
+        transactionDao.toOutputDto()
     }
 
     fun processed(authorizedUser: AuthorizedUser, transactionId: Int, productsDiff: List<TransactionInputDto.TransactionProductInputDto>): TransactionOutputDto = transaction {
