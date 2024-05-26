@@ -17,6 +17,9 @@ object TransactionUtils {
                     AppConf.requestStatus.created -> {
                         AppConf.rules.createIncomeRequest
                     }
+                    AppConf.requestStatus.inProgress -> {
+                        AppConf.rules.createIncomeRequest
+                    }
                     AppConf.requestStatus.creationCancelled -> {
                         AppConf.rules.createIncomeRequest
                     }

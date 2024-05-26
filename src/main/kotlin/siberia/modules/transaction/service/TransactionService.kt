@@ -218,7 +218,8 @@ class TransactionService(di: DI) : KodeinService(di) {
         )
 
         val incomeAvailableStatuses = listOf(
-            requestStatus.created
+            requestStatus.created,
+            requestStatus.inProgress,
         )
 
         val writeOffAvailableStatuses = listOf<Int>()

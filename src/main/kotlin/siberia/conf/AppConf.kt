@@ -141,7 +141,10 @@ object AppConf {
     val requestStatusMapper = mapOf(
         requestTypes.income to mapOf(
             requestStatus.created to listOf(
-                requestStatus.processed, requestStatus.creationCancelled
+                requestStatus.inProgress, requestStatus.processed, requestStatus.creationCancelled
+            ),
+            requestStatus.inProgress to listOf(
+                requestStatus.inProgress, requestStatus.processed
             )
         ),
         requestTypes.outcome to mapOf(
@@ -198,6 +201,7 @@ object AppConf {
     val requestToStockMapper = mapOf<Int, Map<Int, StockPair>>(
         requestTypes.income to mapOf(
             requestStatus.created to StockPair.TO,
+            requestStatus.inProgress to StockPair.TO,
             requestStatus.processed to StockPair.TO,
             requestStatus.creationCancelled to StockPair.TO,
         ),

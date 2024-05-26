@@ -86,34 +86,21 @@ object TransactionModel : BaseIntIdTable() {
             }
     }
 
-    fun updateAndSetActualProducts(transactionId: Int, productsDiff: List<TransactionInputDto.TransactionProductInputDto>): List<TransactionFullOutputDto.TransactionProductDto> = transaction {
-        val productList = clearProductsList(transactionId)
-        val diffIdToAmount = mutableMapOf<Int, Double>()
+    fun updateActualByDiff(transactionId: Int, productsDiff: List<TransactionInputDto.TransactionProductInputDto>): Unit = transaction {
+        val diffMapped = mutableMapOf<Int, Double>()
         productsDiff.forEach {
-            if (diffIdToAmount.containsKey(it.productId))
-                diffIdToAmount[it.productId] = diffIdToAmount[it.productId]!! + it.amount
+            if (diffMapped.containsKey(it.productId))
+                diffMapped[it.productId] = diffMapped[it.productId]!! + it.amount
             else
-                diffIdToAmount[it.productId] = it.amount
+                diffMapped[it.productId] = it.amount
         }
 
-        val actualList = productList.map {
-            if (diffIdToAmount.containsKey(it.product.id))
-                it.actualAmount = (diffIdToAmount[it.product.id] ?: (it.actualAmount ?: 0.0))
-            else if (it.actualAmount == null)
-                it.actualAmount = it.amount
-
-            it
+        TransactionToProductModel.slice(TransactionToProductModel.product, TransactionToProductModel.actualAmount).select {
+            (TransactionToProductModel.transaction eq transactionId) and (TransactionToProductModel.product inList diffMapped.keys)
+        }.map { row ->
+            TransactionToProductModel.update({ (TransactionToProductModel.transaction eq transactionId) and (TransactionToProductModel.product eq row[TransactionToProductModel.product])}) {
+                it[actualAmount] = (row[actualAmount] ?: 0.0) + (diffMapped[row[product].value] ?: 0.0)
+            }
         }
-
-        TransactionToProductModel.batchInsert(actualList) {
-            this[TransactionToProductModel.transaction] = transactionId
-            this[TransactionToProductModel.product] = it.product.id
-            this[TransactionToProductModel.amount] = it.amount
-            this[TransactionToProductModel.actualAmount] = it.actualAmount
-            this[TransactionToProductModel.price] = it.price
-        }
-
-
-        actualList
     }
 }
